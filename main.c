@@ -85,12 +85,12 @@ int main(int argc, char** argv)
     int step = 1/reducFactor;
     int size = ((pic.width + 1)*pic.height);
     char content[size];
-    
+
     int index =0;
     for (int i = 0, j = 0; i <= pic.width && j < pic.height;)
     {
         if(c >= pic.width - 1) {
-            content[index++] = '\n';
+            content[index] = '\n';
             c = 0;
             continue;
         }
