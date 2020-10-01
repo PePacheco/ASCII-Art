@@ -73,7 +73,6 @@ int main(int argc, char** argv)
         exit(1);
     }
     load(argv[1], &pic);
-    int fatorReducao = (int)argv[2];
 
     //printf("Primeiros 10 pixels da imagem:\n");
     // for(int i=0; i<100; i++) {
@@ -84,6 +83,8 @@ int main(int argc, char** argv)
 
     // Inverte as cores
     int c = 0;
+    float reducFactor = atof(argv[2]);
+    int step = 1/reducFactor;
     int size = ((pic.width + 1)*pic.height);
     char content[size];
     for(int i=0; i<size; i++) {
