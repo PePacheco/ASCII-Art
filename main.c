@@ -21,6 +21,7 @@ typedef struct {
 // Protótipos
 void load(char* name, Img* pic);
 char pixelToChar(int mean);
+int getIntensity(RGB pic);
 
 // Carrega uma imagem para a struct Img
 void load(char* name, Img* pic)
@@ -33,6 +34,11 @@ void load(char* name, Img* pic)
         exit(1);
     }
     printf("Load: %d x %d x %d\n", pic->width, pic->height, chan);
+}
+
+int getIntensity(RGB pic)
+{
+    return (pic.r * 0.3) + (pic.g * 0.59) + (pic.b * 0.11);
 }
 
 char pixelToChar(int mean) 
@@ -74,37 +80,32 @@ int main(int argc, char** argv)
     }
     load(argv[1], &pic);
 
-    //printf("Primeiros 10 pixels da imagem:\n");
-    // for(int i=0; i<100; i++) {
-    //     float i = (0.3 * (int)pic.img[i].r + 0.59 * (int)pic.img[i].g + 0.11 * (int)pic.img[i].b);
-    //     printf("[%d %d %d] ", pic.img[i].r, pic.img[i].g, pic.img[i].b);
-    // }
-    //printf("\n");
-
-    // Inverte as cores
     int c = 0;
     float reducFactor = atof(argv[2]);
     int step = 1/reducFactor;
     int size = ((pic.width + 1)*pic.height);
     char content[size];
-    for(int i=0; i<size; i++) {
-        
-        if(c == pic.width - 1) {
-            content[i] = '\n';
+    
+    int index =0;
+    for (int i = 0, j = 0; i <= pic.width && j < pic.height;)
+    {
+        if(c >= pic.width - 1) {
+            content[index++] = '\n';
             c = 0;
             continue;
         }
-        int red = pic.img[i].r * 0.3;
-        int green = pic.img[i].g * 0.59;
-        int blue = pic.img[i].b * 0.11;
-        int intensity = red + green + blue;
+        int intensity = getIntensity(pic.img[index]);
 
-        pic.img[i].r = intensity;
-        pic.img[i].g = intensity;
-        pic.img[i].b = intensity;
-        content[i] = pixelToChar(intensity);
+        // printf("i: %d  j: %d \n", i, j);
+        content[index++] = pixelToChar(intensity);
         c++;
+        i = i + step;
+        if(i >= pic.width) {
+            j = j + step;
+            i = 0;
+        }
     }
+    
     // Exemplo: gravando um arquivo de saída com a imagem (não é necessário para o trabalho, apenas
     // para ver o resultado intermediário, por ex, da conversão para tons de cinza)
     SOIL_save_image("out.bmp", SOIL_SAVE_TYPE_BMP, pic.width, pic.height,
