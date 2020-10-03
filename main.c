@@ -22,6 +22,7 @@ typedef struct {
 void load(char* name, Img* pic);
 char pixelToChar(int mean);
 int getIntensity(RGB pic);
+int getMeanIntensity(Img* pic, int currentIndex, int scale);
 
 // Carrega uma imagem para a struct Img
 void load(char* name, Img* pic)
@@ -36,9 +37,9 @@ void load(char* name, Img* pic)
     printf("Load: %d x %d x %d\n", pic->width, pic->height, chan);
 }
 
-int getIntensity(RGB pic)
+int getIntensity(RGB pixel)
 {
-    return (pic.r * 0.3) + (pic.g * 0.59) + (pic.b * 0.11);
+    return (pixel.r * 0.3) + (pixel.g * 0.59) + (pixel.b * 0.11);
 }
 
 char pixelToChar(int mean) 
@@ -71,6 +72,21 @@ char pixelToChar(int mean)
     return '.';
 }
 
+
+int getMeanIntensity(Img* pic, int currentIndex, int step){
+    int total, n;
+    total = 0;
+    n = step * step;                        
+    for(int j = 0; j < step; j++){
+        for(int i = 0; i < step; i++)
+        {
+            total += getIntensity(pic->img[currentIndex + i]);
+        }
+        currentIndex += pic->width;
+    }
+    return total/n;
+}
+
 int main(int argc, char** argv)
 {
     Img pic;
@@ -79,26 +95,28 @@ int main(int argc, char** argv)
         exit(1);
     }
     load(argv[1], &pic);
-
     int c = 0;
     float reducFactor = atof(argv[2]);
     int step = 1/reducFactor;
     int size = ((pic.width + 1)*pic.height);
     char content[size];
 
-    int index =0;
+    int index = 0;
     for (int i = 0, j = 0; i <= pic.width && j < pic.height;)
     {
-        if(c >= pic.width - 1) {
-            content[index] = '\n';
+        if(c >= pic.width) {
+            content[index++] = '\n';
             c = 0;
             continue;
         }
-        int intensity = getIntensity(pic.img[index]);
-
-        // printf("i: %d  j: %d \n", i, j);
-        content[index++] = pixelToChar(intensity);
-        c++;
+        if(i == 0){
+            content[index++] = pixelToChar(getMeanIntensity(&pic, j * pic.width, step));
+        }else if(j == 0){
+            content[index++] = pixelToChar(getMeanIntensity(&pic, i, step));
+        }else{
+            content[index++] = pixelToChar(getMeanIntensity(&pic, i + (pic.width * j), step));
+        }
+        c = c + step;
         i = i + step;
         if(i >= pic.width) {
             j = j + step;
@@ -130,8 +148,7 @@ int main(int argc, char** argv)
                                 font-size: 8px;\n \
                             } \n \
                         </style>\n \
-                        <pre> \n \
-                        ";
+                        <pre> \n";
 
     char* html2 = "     </pre>\n \
                     </body>\n \
